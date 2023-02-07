@@ -1,6 +1,7 @@
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import AES from "crypto-js/aes";
 
 type Inputs = {
   email: string;
@@ -15,9 +16,14 @@ export default function Index() {
     formState: { errors },
   } = useForm<Inputs>();
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
-
   const [togglePassword, setTogglePassword] = useState(false);
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    const encryptedEmail = AES.encrypt(data.email, "KEY");
+    const encryptedPassword = AES.encrypt(data.password, "KEY");
+
+    console.log(encryptedEmail, encryptedPassword);
+  };
 
   /* TODO
    *** convert to input and validation to component for cleaner code and reusability
