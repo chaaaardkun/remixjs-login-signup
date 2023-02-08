@@ -1,14 +1,26 @@
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import axios from "axios";
+import { redirect } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 
 type Inputs = {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
-  confirmPass: string;
+  password_confirmation: string;
 };
+
+export async function loader() {
+  return {
+    ENV: {
+      API_ENDPOINT: process.env.API_ENDPOINT,
+      SECRET_KEY: process.env.SECRET_KEY,
+    },
+  };
+}
 
 export default function Signup() {
   const {
@@ -21,7 +33,20 @@ export default function Signup() {
   const [togglePassword, setTogglePassword] = useState(false);
   const [toggleConfirmPassword, setToggleConfirmPassword] = useState(false);
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
+  const env = useLoaderData<typeof loader>() as any;
+
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    try {
+      await axios.post(env.ENV.API_ENDPOINT + "/registration", data);
+
+      /* TODO: 
+        replace to redirect
+      */
+      window.location.href = "/home";
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   /* TODO
    *** convert to input and validation to component for cleaner code and reusability
@@ -44,14 +69,14 @@ export default function Signup() {
           <input
             className="w-full border p-4 text-lg outline-none"
             placeholder="First Name"
-            {...register("firstName", {
+            {...register("first_name", {
               required: "First Name is required",
             })}
             type="text"
           />
-          {errors.firstName && (
+          {errors.first_name && (
             <span className="relative text-red-400">
-              {errors.firstName.message}
+              {errors.first_name.message}
             </span>
           )}
         </div>
@@ -60,14 +85,14 @@ export default function Signup() {
           <input
             className="w-full border p-4 text-lg outline-none"
             placeholder="Last Name"
-            {...register("lastName", {
+            {...register("last_name", {
               required: "Last Name is required",
             })}
             type="text"
           />
-          {errors.lastName && (
+          {errors.last_name && (
             <span className="relative text-red-400">
-              {errors.lastName.message}
+              {errors.last_name.message}
             </span>
           )}
         </div>
@@ -130,7 +155,7 @@ export default function Signup() {
             className="w-full border p-4 text-lg outline-none"
             placeholder="Confirm Password"
             type={toggleConfirmPassword ? "text" : "password"}
-            {...register("confirmPass", {
+            {...register("password_confirmation", {
               required: "Confirm password is required",
               validate: (val: string) => {
                 if (watch("password") != val) {
@@ -139,9 +164,9 @@ export default function Signup() {
               },
             })}
           />
-          {errors.confirmPass && (
+          {errors.password_confirmation && (
             <span className="text-red-400 relative">
-              {errors.confirmPass.message}
+              {errors.password_confirmation.message}
             </span>
           )}
 

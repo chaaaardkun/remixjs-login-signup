@@ -2,27 +2,55 @@ import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import AES from "crypto-js/aes";
+import axios from "axios";
+import { useLoaderData } from "@remix-run/react";
 
 type Inputs = {
   email: string;
   password: string;
 };
 
+export async function loader() {
+  return {
+    ENV: {
+      API_ENDPOINT: process.env.API_ENDPOINT,
+      SECRET_KEY: process.env.SECRET_KEY,
+    },
+  };
+}
+
 export default function Index() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<Inputs>();
 
+  const env = useLoaderData<typeof loader>() as any;
+
   const [togglePassword, setTogglePassword] = useState(false);
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    const encryptedEmail = AES.encrypt(data.email, "KEY");
-    const encryptedPassword = AES.encrypt(data.password, "KEY");
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    const encryptedEmail = AES.encrypt(data.email, env.ENV.SECRET_KEY);
+    const encryptedPassword = AES.encrypt(data.password, env.ENV.SECRET_KEY);
 
-    console.log(encryptedEmail, encryptedPassword);
+    try {
+      const { data: response } = await axios.post(
+        env.ENV.API_ENDPOINT + "/auth",
+        {
+          email: encryptedEmail.toString(),
+          password: encryptedPassword.toString(),
+        }
+      );
+      console.log(response);
+
+      /* TODO: 
+        replace to redirect
+      */
+      window.location.href = "/home";
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   /* TODO
