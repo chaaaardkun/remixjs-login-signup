@@ -4,6 +4,7 @@ import { useState } from "react";
 import AES from "crypto-js/aes";
 import axios from "axios";
 import { useLoaderData } from "@remix-run/react";
+import Cookies from "js-cookie";
 
 type Inputs = {
   email: string;
@@ -23,6 +24,7 @@ export default function Index() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<Inputs>();
 
@@ -36,20 +38,23 @@ export default function Index() {
 
     try {
       const { data: response } = await axios.post(
-        env.ENV.API_ENDPOINT + "/auth",
+        env.ENV.API_ENDPOINT + "auth",
         {
           email: encryptedEmail.toString(),
           password: encryptedPassword.toString(),
         }
       );
-      console.log(response);
-
-      /* TODO: 
-        replace to redirect
-      */
+      /* SECRET_KEY doesnt work so i added a temp token for testing */
+      Cookies.set("token", response.token);
       window.location.href = "/home";
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      if (error?.response?.data?.message) {
+        setError("password", {
+          type: "custom",
+          message: error?.response?.data?.message,
+        });
+      }
     }
   };
 

@@ -2,8 +2,8 @@ import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import axios from "axios";
-import { redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import Cookies from "js-cookie";
 
 type Inputs = {
   first_name: string;
@@ -37,12 +37,12 @@ export default function Signup() {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
-      await axios.post(env.ENV.API_ENDPOINT + "/registration", data);
+      await axios.post(env.ENV.API_ENDPOINT + "registration", data);
 
       /* TODO: 
         replace to redirect
       */
-      window.location.href = "/home";
+      window.location.href = "/";
     } catch (error) {
       console.log(error);
     }
@@ -183,12 +183,15 @@ export default function Signup() {
           value="Sign Up"
           className="border bg-violet-500 hover:bg-violet-400 p-4 text-white"
         />
-        <a
-          href="/"
-          className="m-auto text-sm text-blue-300 hover:text-blue-200"
-        >
-          Got an account? Sign in.
-        </a>
+        <div className="m-auto">
+          <span className="text-sm">Got an account? </span>
+          <a
+            href="/"
+            className="m-auto text-sm text-blue-300 hover:text-blue-200"
+          >
+            Sign in.
+          </a>
+        </div>
       </form>
     </div>
   );
